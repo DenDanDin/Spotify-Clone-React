@@ -23,6 +23,25 @@ export default function useAuth(code) {
                 window.location = "/"
             })
         }, [code])
-    
+
+    useEffect(() => {
+        if( !refreshToken || !expiresIn) return
+        const timeout = setInterval(() => {
+        axios
+            .post("http://localhost:3001/refresh", {
+                refreshToken,
+            })
+            .then(res => {
+                setRefreshToken(res.data.refreshToken)
+                setExpiresIn(res.data.expiresIn)
+            })
+            .catch(() => {
+                window.location = "/"
+            }) 
+        }, (expiresIn - 60) * 1000)
+
+        return () => clearInterval(timeout)
+    }, [refreshToken, expiresIn])
+
     return accessToken
 }
